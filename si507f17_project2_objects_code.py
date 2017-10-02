@@ -7,7 +7,7 @@ import unittest
 ## Instructions for each piece to be completed for this project can be found in the file, below.
 
 ## To see whether your problem solutions are passing the tests, you should run the Python file:
-# si507f17_project2_objects_tests.py, which should be saved in the same directory as this file. 
+# si507f17_project2_objects_tests.py, which should be saved in the same directory as this file.
 
 ## (DO NOT change the name of this file! Make sure to re-save it with the name si507f17_project2_objects_code.py if you change the name. Otherwise, we will not be able to grade it!)
 
@@ -27,8 +27,8 @@ print("\n*** *** PROJECT 2 *** ***\n")
 
 ## You can search for a variety of different types of media with the iTunes Search API: songs, movies, ebooks and audiobooks... (and more) You'll definitely need to check out the documentation to understand/recall how the parameters of this API work: https://affiliate.itunes.apple.com/resources/documentation/itunes-store-web-service-search-api/
 
-## Here, we've provided functions to get and cache data from the iTunes Search API, but looking at the information in that documentation will help you understand what is happening when the second function below gets invoked. 
-## Make sure you understand what the function does, how it works, and how you could invoke it to get data from iTunes Search about e.g. just songs corresponding to a certain search term, just movies, or just books. 
+## Here, we've provided functions to get and cache data from the iTunes Search API, but looking at the information in that documentation will help you understand what is happening when the second function below gets invoked.
+## Make sure you understand what the function does, how it works, and how you could invoke it to get data from iTunes Search about e.g. just songs corresponding to a certain search term, just movies, or just books.
 ## Refer to the textbook sections about caching, linked above, to help understand these functions!
 
 ## You may want to try them out and see what data gets returned, in order to complete the problems in this project.
@@ -42,35 +42,41 @@ def params_unique_combination(baseurl, params_d, private_keys=["api_key"]):
     return baseurl + "_".join(res)
 
 def sample_get_cache_itunes_data(search_term,media_term="all"):
-	CACHE_FNAME = 'cache_file_name.json'
-	try:
-	    cache_file = open(CACHE_FNAME, 'r')
-	    cache_contents = cache_file.read()
-	    CACHE_DICTION = json.loads(cache_contents)
-	    cache_file.close()
-	except:
-	    CACHE_DICTION = {}
-	baseurl = "https://itunes.apple.com/search"
-	params = {}
-	params["media"] = media_term
-	params["term"] = search_term
-	unique_ident = params_unique_combination(baseurl, params)
-	if unique_ident in CACHE_DICTION:
-		return CACHE_DICTION[unique_ident]
-	else:
-		CACHE_DICTION[unique_ident] = json.loads(requests.get(baseurl, params=params).text)
-		full_text = json.dumps(CACHE_DICTION)
-		cache_file_ref = open(CACHE_FNAME,"w")
-		cache_file_ref.write(full_text)
-		cache_file_ref.close()
-		return CACHE_DICTION[unique_ident]
+    CACHE_FNAME = 'cache_file_name.json'
+    try:
+        cache_file = open(CACHE_FNAME, 'r')
+        cache_contents = cache_file.read()
+        CACHE_DICTION = json.loads(cache_contents)
+        cache_file.close()
+    except:
+        CACHE_DICTION = {}
+    baseurl = "https://itunes.apple.com/search"
+    params = {}
+    params["media"] = media_term
+    params["term"] = search_term
+    unique_ident = params_unique_combination(baseurl, params)
+    if unique_ident in CACHE_DICTION:
+        return CACHE_DICTION[unique_ident]
+    else:
+        CACHE_DICTION[unique_ident] = json.loads(requests.get(baseurl, params=params).text)
+        full_text = json.dumps(CACHE_DICTION)
+        cache_file_ref = open(CACHE_FNAME,"w")
+        cache_file_ref.write(full_text)
+        cache_file_ref.close()
+        return CACHE_DICTION[unique_ident]
 
+
+#print(sample_get_cache_itunes_data('jaws'))
+#test = sample_get_cache_itunes_data('jaws')
+#print(json.dumps(test, indent=4, sort_keys=True))
+#response = sample_get_cache_itunes_data('jaws')
+#Media(response['results'][0])
 
 ## [PROBLEM 1] [250 POINTS]
 print("\n***** PROBLEM 1 *****\n")
 
 
-## For problem 1, you should define a class Media, representing ANY piece of media you can find on iTunes search. 
+## For problem 1, you should define a class Media, representing ANY piece of media you can find on iTunes search.
 
 
 ## The Media class constructor should accept one dictionary data structure representing a piece of media from iTunes as input to the constructor.
@@ -86,6 +92,49 @@ print("\n***** PROBLEM 1 *****\n")
 ## - a special len method, which, for the Media class, returns 0 no matter what. (The length of an audiobook might mean something different from the length of a song, depending on how you want to define them!)
 ## - a special contains method (for the in operator) which takes one additional input, as all contains methods must, which should always be a string, and checks to see if the string input to this contains method is INSIDE the string representing the title of this piece of media (the title instance variable)
 
+class Media(object):
+    def __init__(self, media_dict):
+        try:
+            self.title = media_dict['trackName']
+        except:
+            self.title = ''
+        try:
+            self.author = media_dict['artistName']
+        except:
+            self.author = ''
+        try:
+            self.itunes_URL = media_dict['artistViewUrl']
+        except:
+            self.itune_URL = ''
+        try:
+            self.itunes_id = media_dict['trackId']
+        except:
+            self.itunes_id = ''
+        try:
+            self.length = media_dict['trackTimeMillis']
+        except:
+            self.length = ''
+
+    def __str__(self):
+        return self.title+' by '+self.author
+
+    def __repr__(self):
+        return 'ITUNES MEDIA: '+str(self.itunes_id)
+
+    def __len__(self):
+        return 0
+
+    def __contains__(self, test_string):
+        #if test_string == type(''):
+        return test_string in self.author or test_string in self.title
+        #else:
+        #    return False
+        '''if test_string in self.author:
+            return True
+        elif test_string in self.title:
+            return True
+        else:
+            return False'''
 
 
 ## [PROBLEM 2] [400 POINTS]
@@ -109,6 +158,25 @@ print("\n***** PROBLEM 2 *****\n")
 
 ## Should have the len method overridden to return the number of seconds in the song. (HINT: The data supplies number of milliseconds in the song... How can you access that data and convert it to seconds?)
 
+class Song(Media):
+    def __init__(self, media_dict):
+        Media.__init__(self, media_dict)
+        #super().__init__(title, author, itunes_URL, itunes_id)
+        try:
+            self.album = media_dict['collectionName']
+        except:
+            self.album = ''
+        try:
+            self.track_number = media_dict['trackNumber']
+        except:
+            self.track_number = ''
+        try:
+            self.genre = media_dict['primaryGenreName']
+        except:
+            self.genre = ''
+
+    def __len__(self):
+        return int(self.length/1000)
 
 
 ### class Movie:
@@ -117,12 +185,47 @@ print("\n***** PROBLEM 2 *****\n")
 ## - rating (the content advisory rating, from the data)
 ## - genre
 ## - description (if none, the value of this instance variable should be None) -- NOTE that this might cause some string encoding problems for you to debug!
-## HINT: Check out the Unicode sub-section of the textbook! This is a common type of Python debugging you'll encounter with real data... but using the right small amount of code to fix it will solve all your problems. 
+## HINT: Check out the Unicode sub-section of the textbook! This is a common type of Python debugging you'll encounter with real data... but using the right small amount of code to fix it will solve all your problems.
 
 ## Should have the len method overridden to return the number of minutes in the movie (HINT: The data returns the number of milliseconds in the movie... how can you convert that to minutes?)
 
 ## Should have an additional method called title_words_num that returns an integer representing the number of words in the movie description. If there is no movie description, this method should return 0.
 
+class Movie(Media):
+    def __init__(self, media_dict):
+        Media.__init__(self, media_dict)
+        #super().__init__(self, media_dict)
+        try:
+            self.rating = media_dict['contentAdvisoryRating']
+        except:
+            self.rating = ''
+        try:
+            self.description = media_dict["longDescription"].encode('utf-8')
+        except:
+            self.description = ''
+        try:
+            self.genre = media_dict['primaryGenreName']
+        except:
+            self.genre = ''
+        try:
+            self.length = media_dict['trackTimeMillis']
+        except:
+            self.length = 0
+        try:
+            self.itunes_URL = media_dict['trackViewUrl']
+        except:
+            self.itunes_id = ''
+
+    def __len__(self):
+        return int((self.length/(1000*60) % 60))
+
+    def __title_words_num__(self):
+        if self.desciption == '':
+            return 0
+        else:
+            wordlist = self.description.split()
+            num = len(wordlist)
+            return num
 
 
 ## [PROBLEM 3] [150 POINTS]
@@ -143,15 +246,30 @@ movie_samples = sample_get_cache_itunes_data("love","movie")["results"]
 
 ## You may want to do some investigation on these variables to make sure you understand correctly what type of value they hold, what's in each one!
 
-## Use the values in these variables above, and the class definitions you've written, in order to create a list of each media type, including "media" generally. 
+## Use the values in these variables above, and the class definitions you've written, in order to create a list of each media type, including "media" generally.
 
-## You should end up with: a list of Media objects saved in a variable media_list, 
-## a list of Song objects saved in a variable song_list, 
+## You should end up with: a list of Media objects saved in a variable media_list,
+## a list of Song objects saved in a variable song_list,
 ## a list of Movie objects saved in a variable movie_list.
 
 ## You may use any method of accumulation to make that happen.
 
+media_list = []
+for item in media_samples:
+    media_instance = Media(item) #object == instance
+    media_list.append(media_instance)
 
+# I took the code on the three lines above from Piazza by Kenji Kaneko, this also helped me build the code in movie_list and song_list. This helped - I was at a loss on this one but the code is very straight forward and now the concept makes sense to me.
+
+movie_list = []
+for item in movie_samples:
+    movie_instance = Movie(item)
+    movie_list.append(movie_instance)
+
+song_list = []
+for item in song_samples:
+    song_instance = Song(item)
+    song_list.append(song_instance)
 
 
 ## [PROBLEM 4] [200 POINTS]
@@ -165,9 +283,9 @@ print("\n***** PROBLEM 4 *****\n")
 ## Each of those CSV files should have 5 columns each:
 # - title
 # - artist
-# - id 
-# - url (for the itunes url of that thing -- the url to view that track of media on iTunes) 
-# - length 
+# - id
+# - url (for the itunes url of that thing -- the url to view that track of media on iTunes)
+# - length
 
 ## There are no provided tests for this problem -- you should check your CSV files to see that they fit this description to see if this problem worked correctly for you. IT IS VERY IMPORTANT THAT YOUR CSV FILES HAVE EXACTLY THOSE NAMES!
 
@@ -175,7 +293,7 @@ print("\n***** PROBLEM 4 *****\n")
 
 ## HINT: You may want to think about what code could be generalized here, and what couldn't, and write a function or two -- that might make your programming life a little bit easier in the end, even though it will require more thinking at the beginning! But you do not have to do this.
 
-## HINT #2: *** You MAY add other, non-required, methods to the class definitions in order to make this easier, if you prefer to! 
+## HINT #2: *** You MAY add other, non-required, methods to the class definitions in order to make this easier, if you prefer to!
 
 ## It is perfectly fine to write this code in any way, as long as you rely on instances of the classes you've defined, and the code you write results in 3 correctly formatted CSV files!
 
@@ -183,17 +301,29 @@ print("\n***** PROBLEM 4 *****\n")
 
 ## HINT #4: Write or draw out your plan for this before you actually start writing the code! That will make it much easier.
 
+outfile = open('media.csv','w')
+outfile.write('title, artist, id, url, length\n')
+for item in media_list:
+    try:
+        outfile.write('{}, {}, {},{},{}\n'.format(item.title,item.author,item.itunes_id,item.itunes_URL, item.length))
+    except:
+        outfile.write('na,na,na,na,na\n')
+outfile.close()
 
+outfile = open('movies.csv','w')
+outfile.write('title, artist, id, url, length\n')
+for item in movie_list:
+    try:
+        outfile.write('{}, {}, {},{},{}\n'.format(item.title,item.author,item.itunes_id,item.itunes_URL, item.length))
+    except:
+        outfile.write('na,na,na,na,na\n')
+outfile.close()
 
-
-
-
-
-
-
-
-
-
-
-
-
+outfile = open('songs.csv','w')
+outfile.write('title, artist, id, url, length\n')
+for item in song_list:
+    try:
+        outfile.write('{}, {}, {},{},{}\n'.format(item.title,item.author,item.itunes_id,item.itunes_URL, item.length))
+    except:
+        outfile.write('na,na,na,na,na\n')
+outfile.close()
